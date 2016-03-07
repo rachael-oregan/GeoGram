@@ -1,0 +1,3 @@
+rootProject.name = 'InstaGo'
+
+include ':app'
