@@ -46,9 +46,7 @@ var InstaGo = React.createClass({
     },
 
     componentDidUpdate(prevProps, prevState) {
-      console.log('componentDidUpdate')
       if (prevState.position !== this.state.position) {
-        console.log('componentIsUpdating')
         this.fetchData();
       }
     },
@@ -57,26 +55,13 @@ var InstaGo = React.createClass({
       navigator.geolocation.clearWatch(this.watchID)
     },
 
-    //shouldComponentUpdate(nextProps, nextState) {
-    //  var a = (
-    //      this.state.position !== nextState.position ||
-    //        !_.isEqual(this.state.imageData.sort(), nextState.imageData.sort())
-    //    )
-    //    console.log(a)
-    //    return true
-    //},
-
     fetchData() {
-       console.log('')
-       console.log(this.state)
        const lat = this.state.position.coords.latitude;
        const lng = this.state.position.coords.longitude;
 
        fetch(`https://api.instagram.com/v1/media/search?lat=${lat}&lng=${lng}&access_token=${ACCESS_TOKEN}`)
          .then((response) => response.json())
          .then((responseData) => {
-           console.log('fetchDataResponse')
-           console.log(responseData)
            this.setState({
              imageData: responseData.data
            });
@@ -95,9 +80,7 @@ var InstaGo = React.createClass({
   },
 
   renderRow(images) {
-  console.log(this.state.imageData)
     return images.map((uri) => {
-      console.log(uri.id)
       return (
         <Image
           key={uri.id}
@@ -108,18 +91,7 @@ var InstaGo = React.createClass({
     })
   },
 
-  renderImagesInGroupsOf(count) {
-    return _.chunk(this.state.imageData, IMAGES_PER_ROW).map((imagesForRow) => {
-      return (
-        <View style={styles.row}>
-          {this.renderRow(imagesForRow)}
-        </View>
-      )
-    })
-  },
-
   renderImages() {
-    console.log(this.state.imageData)
     return _.chunk(this.state.imageData, 3).map((imagesForRow) => {
       return (
         <View style={styles.row} key={imagesForRow[0].id}>
