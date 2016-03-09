@@ -24,7 +24,8 @@ var InstaGo = React.createClass({
     return {
       currentScreenWidth: width,
       currentScreenHeight: height,
-      position: false,
+      initialPosition: false,
+      changedPosition: false,
       watchID: null,
       imageData: [],
     }
@@ -36,18 +37,31 @@ var InstaGo = React.createClass({
 
     getPosition() {
       navigator.geolocation.getCurrentPosition(
-        (position) => this.setState({position}),
+        (initialPosition) => this.setState({initialPosition}),
         (error) => console.log(error),
+        {enableHighAccuracy: true, timeout: 2000},
       )
       this.watchID = navigator.geolocation.watchPosition(
-        (position) => this.setState({position}),
+        (changedPosition) => this.setState({changedPosition}),
         (error) => console.log(error),
+        {enableHighAccuracy: true, timeout: 2000},
       )
     },
 
     componentDidUpdate(prevProps, prevState) {
-      if (prevState.position !== this.state.position) {
-        this.fetchData();
+      if (prevState.initialPosition !== this.state.initialPosition) {
+        var lat = this.state.initialPosition.coords.latitude;
+        var lng = this.state.initialPosition.coords.longitude;
+        this.fetchData(lat, lng);
+      }
+      else if (prevState.changedPosition &&
+        prevState.changedPosition.coords.latitude !==
+        this.state.changedPosition.coords.latitude &&
+        prevState.changedPosition.coords.longitude !==
+        this.state.changedPosition.coords.longitude) {
+          var lat = this.state.changedPosition.coords.latitude;
+          var lng = this.state.changedPosition.coords.longitude;
+          this.fetchData(lat, lng);
       }
     },
 
@@ -55,10 +69,7 @@ var InstaGo = React.createClass({
       navigator.geolocation.clearWatch(this.watchID)
     },
 
-    fetchData() {
-       const lat = this.state.position.coords.latitude;
-       const lng = this.state.position.coords.longitude;
-
+    fetchData(lat, lng) {
        fetch(`https://api.instagram.com/v1/media/search?lat=${lat}&lng=${lng}&access_token=${ACCESS_TOKEN}`)
          .then((response) => response.json())
          .then((responseData) => {
