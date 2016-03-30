@@ -7,7 +7,6 @@ var {
   Dimensions
 } = React;
 
-
 var {width, height} = Dimensions.get('window');
 
 var HandleRotation = React.createClass({
