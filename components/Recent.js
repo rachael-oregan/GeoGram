@@ -16,7 +16,7 @@ var {
 
 var _ = require('lodash');
 var {width, height} = Dimensions.get('window');
-var secret = require('./secrets')
+var secret = require('../constants/secrets');
 
 const ACCESS_TOKEN = secret.ACCESS_TOKEN;
 
@@ -117,7 +117,6 @@ var RecentImages = React.createClass({
   },
 
   render: function() {
-    //var navigator = this.props.navigator;
     return (
       this.renderScene()
     );

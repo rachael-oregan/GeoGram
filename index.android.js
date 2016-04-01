@@ -11,10 +11,10 @@ var {
 } = React;
 
 var ScrollableTabView = require('react-native-scrollable-tab-view');
-var RecentImages = require('./RecentImages');
-var Interests = require('./Interests');
-var Following = require('./Following');
-var HandleRotation = require('./HandleRotation');
+var RecentImages = require('./components/RecentImages');
+var Interests = require('./components/Interests');
+var Following = require('./components/Following');
+var HandleRotation = require('./components/HandleRotation');
 
 var InstaGo = React.createClass({
 
