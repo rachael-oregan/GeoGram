@@ -11,7 +11,7 @@ var {
 } = React;
 
 var ScrollableTabView = require('react-native-scrollable-tab-view');
-var RecentImages = require('./components/RecentImages');
+var Recent = require('./components/Recent');
 var Interests = require('./components/Interests');
 var Following = require('./components/Following');
 var HandleRotation = require('./components/HandleRotation');
@@ -26,7 +26,7 @@ var InstaGo = React.createClass({
       tabBarUnderlineColor='white'
       tabBarInactiveTextColor="grey">
         <ScrollView onLayout={this.HandleRotation} tabLabel="Recent">
-            <RecentImages />
+            <Recent />
         </ScrollView>
         <ScrollView onLayout={this.HandleRotation} tabLabel="Interests">
             <Interests />
