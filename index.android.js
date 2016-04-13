@@ -21,6 +21,7 @@ var InstaGo = React.createClass({
   render: function() {
     return (
       <ScrollableTabView
+      onChangeTab={function(tabInfo){console.log(tabInfo)}}
       tabBarBackgroundColor='purple'
       tabBarActiveTextColor='white'
       tabBarUnderlineColor='white'
