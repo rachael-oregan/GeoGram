@@ -14,11 +14,17 @@ var {
   TouchableOpacity
 } = React;
 
+var FBLogin = require('react-native-facebook-login');
+var GeoImageUtils = require('../utils/geoimages');
+
 var Settings = React.createClass({
 
   render: function() {
+
     return (
-      <Text>Settings</Text>
+      <View>
+
+      </View>
     );
   }
 });

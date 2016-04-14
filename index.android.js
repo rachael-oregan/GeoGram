@@ -13,7 +13,7 @@ var {
 var ScrollableTabView = require('react-native-scrollable-tab-view');
 var Recent = require('./components/Recent');
 var Interests = require('./components/Interests');
-var Following = require('./components/Following');
+var Settings = require('./components/Settings');
 var HandleRotation = require('./components/HandleRotation');
 
 var InstaGo = React.createClass({
@@ -32,8 +32,8 @@ var InstaGo = React.createClass({
         <ScrollView onLayout={this.HandleRotation} tabLabel="Interests">
             <Interests />
         </ScrollView>
-        <ScrollView onLayout={this.HandleRotation} tabLabel="Following">
-            <Following />
+        <ScrollView onLayout={this.HandleRotation} tabLabel="Settings">
+            <Settings />
         </ScrollView>
       </ScrollableTabView>
     );

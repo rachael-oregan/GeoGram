@@ -17,6 +17,7 @@ var {
 var _ = require('lodash');
 var {width, height} = Dimensions.get('window');
 var secret = require('../constants/secrets');
+var GeoImageUtils = require('../utils/geoimages');
 
 const ACCESS_TOKEN = secret.ACCESS_TOKEN;
 
@@ -71,14 +72,12 @@ var RecentImages = React.createClass({
   },
 
   fetchData(lat, lng) {
-     fetch(`https://api.instagram.com/v1/media/search?lat=${lat}&lng=${lng}&access_token=${ACCESS_TOKEN}`)
-       .then((response) => response.json())
-       .then((responseData) => {
-         this.setState({
-           imageData: responseData.data
-         });
-       })
-       .done();
+    var _this = this;
+    GeoImageUtils.fetchImages({lng: lng, lat: lat}, {
+      success: function (imageList) {
+        _this.setState({imageData: imageList});
+      }
+    })
   },
 
   calculatedSize() {
@@ -108,17 +107,11 @@ var RecentImages = React.createClass({
     })
   },
 
-  renderScene() {
-    return (
-      <View>
-        {this.renderImages()}
-      </View>
-    )
-  },
-
   render: function() {
     return (
-      this.renderScene()
+     <View>
+       {this.renderImages()}
+     </View>
     );
   }
 });

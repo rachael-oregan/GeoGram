@@ -19,6 +19,8 @@ var FBLogin = require('react-native-facebook-login');
 var GeoImage = require('./Recent');
 var {width, height} = Dimensions.get('window');
 var _ = require('underscore');
+var GeoImageUtils = require('../utils/geoimages');
+var _ = require('lodash');
 
 var Interests = React.createClass({
 
@@ -26,73 +28,115 @@ var Interests = React.createClass({
     return {
       currentScreenWidth: width,
       currentScreenHeight: height,
+      initialPosition: false,
+      changedPosition: false,
+      watchID: null,
       user: null,
-      userLikes: null,
-      pageCategories: null,
-      interests: [],
-      interestedImages: null
+      geoImages: [],
+      categories: new Set(),
+      interestedImages: []
     }
   },
 
   componentDidMount() {
-  console.log("SHIT")
-  console.log(this.state)
-    if (this.state.user) {
-    console.log("Someone logged in")
-      fetchUserLikes(this.state.user)
-      fetchPageCategories(this.state.userLikes.pageId)
-      mapCategoriesToInterests(this.state.pageCategories.category)
-    }
-    //var _this = this;
-    //setInterval(function(){console.log(_this.state.user, _this.state.userLikes)}, 5000)
-  },
-
-  fetchUserLikes(user) {
-  console.log("userLikes")
-    var api = `https://graph.facebook.com/v2.5/${user.profile.id}/likes?access_token=${user.token}`;
-
-      fetch(api)
-        .then((response) => response.json())
-        .then((responseData) => {
-          this.setState({
-            userLikes : {
-              pageId : responseData.data.id
-            },
-          });
-        })
-        .done();
-  },
-
-  fetchPageCategories(pageId) {
-  console.log("pageCategories")
-    //for each id get the category and store into pageCategories
-    var userToken = this.state.user.token
-    var api = `https://graph.facebook.com/v2.5/pageId/?fields=category&access_token=${userToken}`;
-
-    fetch(api)
-      .then((response) => response.json())
-      .then((responseData) => {
-        this.setState({
-          pageCategories : {
-            category : responseData.data.category
-          },
+     var _this = this;
+    AsyncStorage.getItem('fb:user', (err,res) => {
+      if(res !== null) {
+        console.log("USER GOT");
+        console.log(res);
+        var user = JSON.parse(res);
+        _this.setState({
+          user: user
         });
-      })
-      .done();
+        _this.getPosition();
+      }
+    })
   },
 
-  mapPageCategoriesToInterests(pageCategories) {
-  console.log("mapPageCategories")
-    for (var i = 0; i < this.pageCategories.length; i++) {
-      //get rid of '/' and spaces from page categories
-      var delimiters = ['/', ' '];
-      var splittedArray = this.pageCategories[i].category.Split(delimiters)
-      for (var j = 0; j < splittedArray.length; j++) {
-        if (_.findWhere(this.state.interests, splittedArray[j]) == null) {
-          this.state.interests.push(splittedArray[j]);
-        }
-      }
+  componentWillUnmount() {
+  var _this = this;
+    navigator.geolocation.clearWatch(_this.watchID)
+  },
+
+
+  getPosition() {
+    var _this = this;
+    navigator.geolocation.getCurrentPosition(
+      (initialPosition) => {
+        _this.setState({initialPosition})
+        console.log("sbasa")
+      },
+      (error) => console.log(error),
+      {enableHighAccuracy: true, timeout: 2000},
+    )
+    this.watchID = navigator.geolocation.watchPosition(
+      (changedPosition) => _this.setState({changedPosition}),
+      (error) => console.log(error),
+      {enableHighAccuracy: true, timeout: 2000},
+    )
+  },
+
+  shouldComponentUpdate(prevProps, prevState) {
+    if(prevState.changedPosition || prevState.initialPosition ||
+    prevState.user !== null || prevState.interestedImages) {
+    if (prevState.changedPosition.timestamp) {
+      prevState.changedPosition.timestamp = null
+      prevState.initialPosition.timestamp = null
     }
+      var _this = this.state
+      console.log(_this.state)
+      console.log(prevState)
+      if(JSON.stringify(prevState) === JSON.stringify(_this)) {
+        return(false)
+      } else {
+        return(true)
+      }
+    } else {return(false)}
+  },
+
+  componentDidUpdate(prevProps, prevState) {
+    this.getInterestedImages()
+    //console.log(this.state)
+    //console.log(JSON.stringify(this.state) === JSON.stringify(prevState))
+    //console.log(JSON.stringify(this.props) === JSON.stringify(prevProps))
+    var _this = this;
+    if (prevState.initialPosition !== _this.state.initialPosition) {
+    console.log("you serious")
+      var lat = _this.state.initialPosition.coords.latitude;
+      var lng = _this.state.initialPosition.coords.longitude;
+      _this.fetchData(lat, lng);
+      _this.getInterestedImages()
+    }
+    else if (prevState.changedPosition &&
+      prevState.changedPosition.coords.latitude !==
+      _this.state.changedPosition.coords.latitude &&
+      prevState.changedPosition.coords.longitude !==
+      _this.state.changedPosition.coords.longitude) {
+        console.log("else if")
+        var lat = _this.state.changedPosition.coords.latitude;
+        var lng = _this.state.changedPosition.coords.longitude;
+        _this.fetchData(lat, lng);
+        _this.getInterestedImages()
+    }
+    console.log("BLA")
+   },
+
+  fetchData(lat, lng) {
+    var _this = this;
+    GeoImageUtils.fetchImages({lng: lng, lat: lat}, {
+      success: function (imageList) {
+         console.log("CHECK2")
+        _this.setState({geoImages: imageList});
+      }
+    });
+    GeoImageUtils.fetchInterestImages(_this.state.user,{
+      success: function(categoryList) {
+        console.log("CHECK")
+        _this.setState({
+          categories: categoryList
+        })
+      }
+    });
   },
 
   calculatedSize() {
@@ -113,33 +157,40 @@ var Interests = React.createClass({
   },
 
   renderImages(){
-     return _.chunk(this.state.interestedImages, 3).map((imagesForRow) => {
+  var _this = this;
+     return _.chunk(_this.state.interestedImages, 3).map((imagesForRow) => {
       return (
         <View style={styles.row} key={imagesForRow[0].id}>
-          {this.renderRow(imagesForRow)}
+          {this.renderRows(imagesForRow)}
         </View>
         )
       })
   },
-   componentWillReceiveProps: function() {
-     console.log("GAY NUTS");
-   },
+
+  getInterestedImages() {
+    var _this = this;
+    var interestedImages = []
+    _this.state.categories.add("womensday")
+    for (var i = 0; i < _this.state.geoImages.length; i++) {
+      let geoTags = new Set(_this.state.geoImages[i].tags)
+      let intersection = new Set(
+        [..._this.state.categories].filter(x => geoTags.has(x))
+      )
+      if (intersection.size > 0) {
+        interestedImages.push(_this.state.geoImages[i])
+      }
+     }
+     this.setState({
+       interestedImages: interestedImages
+     })
+  },
+
   render: function() {
-  console.log("RENDER")
     if(this.state.user == null) return this.renderFBLogin();
     var _this = this;
-    console.log(_this.state.interests)
-
-    for (var i = 0; i < GeoImage.id.length; i++){
-      for (var j = 0; j < _this.state.interests.length; j++) {
-        //GeoImage should have a list of images from current location
-        //then filter out the ones for each interest
-        _this.state.interestedImages = GeoImage[i].data.tags[_this.state.interests[j]]
-      }
-    }
     return (
       <View>
-        {_this.renderImages()}
+        {this.renderImages()}
       </View>
     );
 
@@ -153,10 +204,17 @@ var Interests = React.createClass({
                   onLogin={function(data){
                     console.log("Logged in!");
                     console.log(data);
-                    AsyncStorage.setItem('fb_user', JSON.stringify({token: data.token, id: data.profile.id}),
-                    function() {console.log(AsyncStorage.getItem('fb_user'))})
-                    _this.setState({ user : data });
-                    _this.getUserLikes(_this.state.user)
+                     AsyncStorage.setItem('fb:user',JSON.stringify(data), () => {
+                       console.log("FB USER STORED");
+                       _this.setState({ user : data });
+                       GeoImageUtils.fetchInterestImages(_this.state.user,{
+                         success: function(categoryList) {
+                           _this.setState({
+                             categories: categoryList
+                           })
+                         }
+                       });
+                     });
                   }}
                   onLogout={function(){
                     console.log("Logged out.");
@@ -166,7 +224,7 @@ var Interests = React.createClass({
                     console.log("Existing login found.");
                     console.log(data);
                     _this.setState({ user : data });
-                    _this.getUserLikes(_this.state.user)
+                    _this.fetchUserLikes(_this.state.user)
                   }}
                   onLoginNotFound={function(){
                     console.log("No user logged in.");
