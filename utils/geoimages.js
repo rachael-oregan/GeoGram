@@ -24,6 +24,14 @@ var GeoImages = {
     });
   },
 
+
+  setUser: function (data, callbacks) {
+    AsyncStorage.setItem(`${data.profile.id}`, JSON.stringify(data), () => {
+      console.log(`USER IS NOW CACHED WITH KEY: USER ID: ${data.profile.id}`)
+      callbacks.success(data);
+    })
+  },
+
   fetchInterestImages: function (user, callbacks) {
      var api = `https://graph.facebook.com/v2.5/${user.profile.id}/likes?access_token=${user.token}`;
      let categoryList = new Set();

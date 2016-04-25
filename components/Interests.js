@@ -42,7 +42,6 @@ var Interests = React.createClass({
      var _this = this;
     AsyncStorage.getItem('fb:user', (err,res) => {
       if(res !== null) {
-        console.log("USER GOT");
         console.log(res);
         var user = JSON.parse(res);
         _this.setState({
@@ -64,7 +63,6 @@ var Interests = React.createClass({
     navigator.geolocation.getCurrentPosition(
       (initialPosition) => {
         _this.setState({initialPosition})
-        console.log("sbasa")
       },
       (error) => console.log(error),
       {enableHighAccuracy: true, timeout: 2000},
@@ -77,15 +75,13 @@ var Interests = React.createClass({
   },
 
   shouldComponentUpdate(prevProps, prevState) {
-    if(prevState.changedPosition || prevState.initialPosition ||
+    if(prevState.changedPosition !== false || prevState.initialPosition !== false ||
     prevState.user !== null || prevState.interestedImages) {
-    if (prevState.changedPosition.timestamp) {
-      prevState.changedPosition.timestamp = null
-      prevState.initialPosition.timestamp = null
+    if (prevState.changedPosition.timestamp &&
+       prevState.changedPosition.timestamp !== false) {
+         prevState.changedPosition.timestamp = null
     }
       var _this = this.state
-      console.log(_this.state)
-      console.log(prevState)
       if(JSON.stringify(prevState) === JSON.stringify(_this)) {
         return(false)
       } else {
@@ -95,46 +91,34 @@ var Interests = React.createClass({
   },
 
   componentDidUpdate(prevProps, prevState) {
-    this.getInterestedImages()
-    //console.log(this.state)
-    //console.log(JSON.stringify(this.state) === JSON.stringify(prevState))
-    //console.log(JSON.stringify(this.props) === JSON.stringify(prevProps))
     var _this = this;
+    _this.getInterestedImages()
     if (prevState.initialPosition !== _this.state.initialPosition) {
-    console.log("you serious")
       var lat = _this.state.initialPosition.coords.latitude;
       var lng = _this.state.initialPosition.coords.longitude;
       _this.fetchData(lat, lng);
-      _this.getInterestedImages()
     }
     else if (prevState.changedPosition &&
       prevState.changedPosition.coords.latitude !==
       _this.state.changedPosition.coords.latitude &&
       prevState.changedPosition.coords.longitude !==
       _this.state.changedPosition.coords.longitude) {
-        console.log("else if")
         var lat = _this.state.changedPosition.coords.latitude;
         var lng = _this.state.changedPosition.coords.longitude;
         _this.fetchData(lat, lng);
-        _this.getInterestedImages()
     }
-    console.log("BLA")
    },
 
   fetchData(lat, lng) {
     var _this = this;
     GeoImageUtils.fetchImages({lng: lng, lat: lat}, {
       success: function (imageList) {
-         console.log("CHECK2")
         _this.setState({geoImages: imageList});
       }
     });
     GeoImageUtils.fetchInterestImages(_this.state.user,{
       success: function(categoryList) {
-        console.log("CHECK")
-        _this.setState({
-          categories: categoryList
-        })
+        _this.setState({categories: categoryList})
       }
     });
   },
@@ -170,9 +154,11 @@ var Interests = React.createClass({
   getInterestedImages() {
     var _this = this;
     var interestedImages = []
-    _this.state.categories.add("womensday")
+    _this.state.categories.add("media")
+    _this.state.categories.add("lgbt")
     for (var i = 0; i < _this.state.geoImages.length; i++) {
       let geoTags = new Set(_this.state.geoImages[i].tags)
+      console.log("Tags: " + geoTags)
       let intersection = new Set(
         [..._this.state.categories].filter(x => geoTags.has(x))
       )
@@ -180,71 +166,71 @@ var Interests = React.createClass({
         interestedImages.push(_this.state.geoImages[i])
       }
      }
-     this.setState({
+     _this.setState({
        interestedImages: interestedImages
      })
   },
 
-  render: function() {
-    if(this.state.user == null) return this.renderFBLogin();
+  renderFBLogin: function(){
     var _this = this;
+      return (
+        <View>
+          <FBLogin style={{ marginBottom: 10, }}
+              permissions={["email","user_friends", "user_likes"]}
+              onLogin={function(data){
+                console.log("Logged in!");
+                console.log(data);
+                 AsyncStorage.setItem('fb:user',JSON.stringify(data), () => {
+                   console.log("FB USER STORED");
+                   _this.setState({ user : data });
+                   GeoImageUtils.fetchInterestImages(_this.state.user,{
+                     success: function(categoryList) {
+                       _this.setState({
+                         categories: categoryList
+                       })
+                     }
+                   });
+                 });
+              }}
+              onLogout={function(){
+                console.log("Logged out.");
+                _this.setState({ user : null });
+              }}
+              onLoginFound={function(data){
+                console.log("Existing login found.");
+                console.log(data);
+                _this.setState({ user : data });
+                _this.fetchUserLikes(_this.state.user)
+              }}
+              onLoginNotFound={function(){
+                console.log("No user logged in.");
+                _this.setState({ user : null });
+              }}
+              onError={function(data){
+                console.log("ERROR");
+                console.log(data);
+              }}
+              onCancel={function(){
+                console.log("User cancelled.");
+              }}
+              onPermissionsMissing={function(data){
+                console.log("Check permissions!");
+                console.log(data);
+              }}
+          />
+        </View>
+      );
+  },
+
+  render: function() {
+    var _this = this;
+    if(_this.state.user == null) return _this.renderFBLogin();
     return (
       <View>
-        {this.renderImages()}
+        {_this.renderImages()}
       </View>
     );
-
   },
-  renderFBLogin: function(){
-  var _this = this;
-          return (
-            <View>
-              <FBLogin style={{ marginBottom: 10, }}
-                  permissions={["email","user_friends", "user_likes"]}
-                  onLogin={function(data){
-                    console.log("Logged in!");
-                    console.log(data);
-                     AsyncStorage.setItem('fb:user',JSON.stringify(data), () => {
-                       console.log("FB USER STORED");
-                       _this.setState({ user : data });
-                       GeoImageUtils.fetchInterestImages(_this.state.user,{
-                         success: function(categoryList) {
-                           _this.setState({
-                             categories: categoryList
-                           })
-                         }
-                       });
-                     });
-                  }}
-                  onLogout={function(){
-                    console.log("Logged out.");
-                    _this.setState({ user : null });
-                  }}
-                  onLoginFound={function(data){
-                    console.log("Existing login found.");
-                    console.log(data);
-                    _this.setState({ user : data });
-                    _this.fetchUserLikes(_this.state.user)
-                  }}
-                  onLoginNotFound={function(){
-                    console.log("No user logged in.");
-                    _this.setState({ user : null });
-                  }}
-                  onError={function(data){
-                    console.log("ERROR");
-                    console.log(data);
-                  }}
-                  onCancel={function(){
-                    console.log("User cancelled.");
-                  }}
-                  onPermissionsMissing={function(data){
-                    console.log("Check permissions!");
-                    console.log(data);
-                  }}
-              />
-            </View>
-          );
-        }
 });
 
 var styles = StyleSheet.create({
