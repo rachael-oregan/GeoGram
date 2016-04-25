@@ -8,6 +8,7 @@
   "dependencies": {
     "react-native": "^0.20.0",
     "react-native-facebook-login": "^1.0.3",
+    "react-native-fbsdk": "^0.1.0",
     "react-native-scrollable-tab-view": "^0.4.0"
   }
 }
