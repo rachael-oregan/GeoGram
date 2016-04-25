@@ -10,6 +10,7 @@
     "react-native-button": "^1.4.2",
     "react-native-facebook-login": "^1.0.3",
     "react-native-scrollable-tab-view": "^0.4.0",
-    "react-native-toggle": "^1.0.3"
+    "react-native-toggle": "^1.0.3",
+    "react-native-fbsdk": "^0.1.0"
   }
 }
