@@ -19,4 +19,8 @@ The user can also discover Instagram tailored to their interests that are obtain
   * Follow the rest of the steps to get a 28 character key hash.
 * Facebook recently released [React-Native SDK] (https://developers.facebook.com/docs/react-native) <br />
   However I used this module at the time [react-native-facebook-login] (https://github.com/magus/react-native-facebook-login)
-* The navbar used was [react-native-scrollable-tab-view] (https://github.com/brentvatne/react-native-scrollable-tab-view)
+* The navbar used was [react-native-scrollable-tab-view] (https://github.com/brentvatne/react-native-scrollable-tab-view) <br />
+
+# Demo
+![Demo] (https://raw.githubusercontent.com/rachael-oregan/InstaGo/master/demo.gif)
+
