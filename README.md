@@ -22,4 +22,4 @@ The user can also discover Instagram tailored to their interests that are obtain
 * The navbar used was [react-native-scrollable-tab-view] (https://github.com/brentvatne/react-native-scrollable-tab-view) <br />
 
 # Demo
-![Demo] (https://raw.githubusercontent.com/rachael-oregan/InstaGo/master/demo.gif)
+![Demo] (https://raw.githubusercontent.com/rachael-oregan/InstaGo/master/images/demo.gif)
