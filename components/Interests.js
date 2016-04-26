@@ -154,11 +154,8 @@ var Interests = React.createClass({
   getInterestedImages() {
     var _this = this;
     var interestedImages = []
-    _this.state.categories.add("media")
-    _this.state.categories.add("lgbt")
     for (var i = 0; i < _this.state.geoImages.length; i++) {
       let geoTags = new Set(_this.state.geoImages[i].tags)
-      console.log("Tags: " + geoTags)
       let intersection = new Set(
         [..._this.state.categories].filter(x => geoTags.has(x))
       )
