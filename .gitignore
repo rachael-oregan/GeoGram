@@ -35,3 +35,6 @@ npm-debug.log
 
 # secrets
 secrets.js
+
+#facebook-sdk
+facebook-android-sdk-4.10.1.iml

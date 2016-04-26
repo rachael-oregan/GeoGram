@@ -23,4 +23,3 @@ The user can also discover Instagram tailored to their interests that are obtain
 
 # Demo
 ![Demo] (https://raw.githubusercontent.com/rachael-oregan/InstaGo/master/demo.gif)
-
