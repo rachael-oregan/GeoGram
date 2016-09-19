@@ -1,4 +1,4 @@
-# InstaGo
+# GeoGram
 An Android [React-Native] (https://facebook.github.io/react-native/) app that allows users to browse Instagram images based on their current location. <br />
 The user can also discover Instagram tailored to their interests that are obtained from Facebook.
 
